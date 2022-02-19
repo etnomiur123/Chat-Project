@@ -18,10 +18,6 @@
       #form {
         background: rgba(0, 0, 0, 0.15);
         padding: 0.25rem;
-        position: fixed;
-        bottom: 0;
-        left: 0;
-        right: 0;
         display: flex;
         height: 3rem;
         box-sizing: border-box;
@@ -59,6 +55,13 @@
         background: #efefef;
       }
       /* Classes  */
+      .text-input__wrapper {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+      }
+
       .user-name {
       }
 
@@ -91,23 +94,36 @@
     </form>
 
     <ul id="messages"></ul>
-    <form id="form" action="">
-      <input id="input" autocomplete="off" /><button>Send</button>
-    </form>
+    <div class="text-input__wrapper">
+      <p class="is-typing"></p>
+      <form id="form" action="">
+        <input id="input" autocomplete="off" /><button>Send</button>
+      </form>
+    </div>
 
     <script src="/socket.io/socket.io.js"></script>
     <script></script>
     <script>
+      //********************
+      //********************
       // GLOBAL VARIABLES
+      //********************
+      //********************
+
       const socket = io();
       let user = {
         id: randomId(),
         name: "",
       };
 
+      //********************
+      //********************
       // MESSAGING LOGIC
+      //********************
+      //********************
       const form = document.getElementById("form");
       const input = document.getElementById("input");
+      const isTypingLabel = document.querySelector(".is-typing");
       const messages = document.getElementById("messages");
 
       form.addEventListener("submit", (e) => {
@@ -116,6 +132,32 @@
       });
 
       socket.on("send message to client", receiveMessage);
+
+      input.addEventListener("keydown", () => {
+        socket.emit("typing", user);
+      });
+
+      let timer;
+
+      input.addEventListener("keyup", () => {
+        clearTimeout(timer);
+
+        timer = setTimeout(() => {
+          socket.emit("stopped typing", user);
+        }, 500);
+      });
+
+      socket.on("typing", (message) => {
+        if (message.user.id === user.id) return;
+
+        isTypingLabel.textContent = message.value;
+      });
+
+      socket.on("stopped typing", (message) => {
+        if (message.user.id === user.id) return;
+
+        isTypingLabel.textContent = '';
+      });
 
       function sendMessage(textValue) {
         if (textValue) {
@@ -154,7 +196,11 @@
         return Math.random() * 1000;
       }
 
+      //********************
+      //********************
       // USER NAME INPUT
+      //********************
+      //********************
       const userNameLabel = document.querySelector(".user-name");
       const userNameInput = document.querySelector(".user-name__input");
       const userNameInputForm = document.querySelector(".user-name__form");

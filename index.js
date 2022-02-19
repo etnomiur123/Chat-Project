@@ -13,6 +13,8 @@ const socketConnection = "connection";
 const socketDisconnect = "disconnect";
 const sendMsgToServer = "send message to server";
 const sendMsgToClient = "send message to client";
+const userIsTyping = "typing";
+const stoppedTyping = "stopped typing";
 const messageType = {
   connection: "connection",
   disconnection: "disconnection",
@@ -24,6 +26,20 @@ io.on(socketConnection, (socket) => {
 
   socket.on(sendMsgToServer, (msg) => {
     io.emit(sendMsgToClient, msg);
+  });
+
+  socket.on(userIsTyping, (user) => {
+    io.emit(userIsTyping, {
+      user,
+      value: `${user.name} is typing`,
+    });
+  });
+
+  socket.on(stoppedTyping, (user) => {
+    io.emit(stoppedTyping, {
+      user,
+      value: '',
+    });
   });
 
   socket.on(socketDisconnect, () => {
