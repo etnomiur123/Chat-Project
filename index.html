@@ -113,7 +113,7 @@
       const socket = io();
       let user = {
         id: randomId(),
-        name: "",
+        name: "anonymous",
       };
 
       //********************
@@ -164,7 +164,7 @@
           const formattedMessage = {
             id: user.id,
             type: "user message",
-            user: user.name ? user.name : null,
+            user: user.name,
             value: textValue,
           };
 
