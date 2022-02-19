@@ -19,20 +19,21 @@ const messageType = {
 };
 
 io.on(socketConnection, (socket) => {
+  // console.log(socket)
   console.log("a user connected");
 
   socket.on(sendMsgToServer, (msg) => {
     io.emit(sendMsgToClient, msg);
   });
 
-  socket.on(socketDisconnect, (msg) => {
+  socket.on(socketDisconnect, () => {
     const userDisconnectedMsg = {
+      id: null,
       type: messageType.disconnection,
       user: null,
       value: `a user disconnected`,
     };
 
-    console.log(msg);
     io.emit(sendMsgToClient, userDisconnectedMsg);
   });
 });

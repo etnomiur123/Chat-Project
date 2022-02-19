@@ -100,7 +100,10 @@
     <script>
       // GLOBAL VARIABLES
       const socket = io();
-      let userName = "";
+      let user = {
+        id: randomId(),
+        name: "",
+      };
 
       // MESSAGING LOGIC
       const form = document.getElementById("form");
@@ -114,27 +117,41 @@
 
       socket.on("send message to client", receiveMessage);
 
-      function sendMessage(message) {
-        if (message) {
-          socket.emit("send message to server", {
+      function sendMessage(textValue) {
+        if (textValue) {
+          const formattedMessage = {
+            id: user.id,
             type: "user message",
-            user: userName ? userName : null,
-            value: message,
-          });
+            user: user.name ? user.name : null,
+            value: textValue,
+          };
+
+          socket.emit("send message to server", formattedMessage);
+          presentUserMessage(formattedMessage);
           clearInputValue(input);
         }
       }
 
       function receiveMessage(message) {
+        if (message.id === user.id) return;
+
+        presentUserMessage(message);
+      }
+
+      function presentUserMessage(message) {
         const li = document.createElement("li");
         li.textContent =
           (message.user ? message.user + ": " : "") + message.value;
 
         if (message.type === "disconnection") {
-          li.classList.add("disconnected");
+          li.classList.add("user-disconnected");
         }
 
         messages.appendChild(li);
+      }
+
+      function randomId() {
+        return Math.random() * 1000;
       }
 
       // USER NAME INPUT
@@ -146,8 +163,8 @@
         e.preventDefault();
 
         if (!userNameInput.value) return;
-        userName = userNameInput.value;
-        userNameLabel.textContent = userName;
+        user.name = userNameInput.value;
+        userNameLabel.textContent = user.name;
         clearInputValue(userNameInput);
       });
 
