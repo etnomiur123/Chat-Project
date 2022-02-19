@@ -13,15 +13,22 @@ app.get("/", (req, res) => {
 io.on("connection", (socket) => {
   console.log("a user connected");
 
-  socket.on('chat message', (msg) => {
-      io.emit('chat message', msg);
-  })
+  socket.on("send message to server", (msg) => {
+    io.emit("send message to client", msg);
+  });
 
-  socket.on("disconnect", () => {
-    console.log("a user disconnected");
+  socket.on("disconnect", (msg) => {
+
+    const userDisconnectedMsg = {
+      type: "disconnection",
+      user: null,
+      value: `a user disconnected`,
+    };
+
+    console.log(msg)
+    io.emit("send message to client", userDisconnectedMsg);
   });
 });
-
 
 server.listen(3000, () => {
   console.log("listening on *:3000");

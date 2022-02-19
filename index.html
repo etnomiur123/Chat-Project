@@ -10,6 +10,11 @@
           Helvetica, Arial, sans-serif;
       }
 
+      p {
+        margin: 0;
+        padding: 0;
+      }
+
       #form {
         background: rgba(0, 0, 0, 0.15);
         padding: 0.25rem;
@@ -53,37 +58,102 @@
       #messages > li:nth-child(odd) {
         background: #efefef;
       }
+      /* Classes  */
+      .user-name {
+      }
+
+      .user-name__form {
+        display: flex;
+        justify-content: space-between;
+      }
+
+      .user-disconnected {
+        color: red;
+      }
     </style>
+    <link
+      href="https://unpkg.com/material-components-web@latest/dist/material-components-web.min.css"
+      rel="stylesheet"
+    />
+    <script src="https://unpkg.com/material-components-web@latest/dist/material-components-web.min.js"></script>
   </head>
   <body>
+    <form class="user-name__form" action="">
+      <div>
+        <input
+          type="text"
+          class="user-name__input"
+          placeholder="Write your username..."
+        />
+        <button>Choose name</button>
+      </div>
+      <p class="user-name"></p>
+    </form>
+
     <ul id="messages"></ul>
     <form id="form" action="">
       <input id="input" autocomplete="off" /><button>Send</button>
     </form>
 
     <script src="/socket.io/socket.io.js"></script>
+    <script></script>
     <script>
-      var socket = io();
-      
-      const form = document.getElementById('form');
-      const input = document.getElementById('input');
-      const messages = document.getElementById('messages');
+      // GLOBAL VARIABLES
+      const socket = io();
+      let userName = "";
 
-      form.addEventListener('submit', (e) => {
-          e.preventDefault();
+      // MESSAGING LOGIC
+      const form = document.getElementById("form");
+      const input = document.getElementById("input");
+      const messages = document.getElementById("messages");
 
-          if(input.value) {
-              socket.emit('chat message', input.value);
-              input.value = '';
-          }
-      })
+      form.addEventListener("submit", (e) => {
+        e.preventDefault();
+        sendMessage(input.value);
+      });
 
-      socket.on('chat message', (msg) => {
-          console.log(msg)
-          const li = document.createElement('li');
-          li.textContent = msg;
-          messages.appendChild(li);
-      })
+      socket.on("send message to client", receiveMessage);
+
+      function sendMessage(message) {
+        if (message) {
+          socket.emit("send message to server", {
+            type: "user message",
+            user: userName ? userName : null,
+            value: message,
+          });
+          clearInputValue(input);
+        }
+      }
+
+      function receiveMessage(message) {
+        const li = document.createElement("li");
+        li.textContent =
+          (message.user ? message.user + ": " : "") + message.value;
+
+        if (message.type === "disconnection") {
+          li.classList.add("disconnected");
+        }
+
+        messages.appendChild(li);
+      }
+
+      // USER NAME INPUT
+      const userNameLabel = document.querySelector(".user-name");
+      const userNameInput = document.querySelector(".user-name__input");
+      const userNameInputForm = document.querySelector(".user-name__form");
+
+      userNameInputForm.addEventListener("submit", (e) => {
+        e.preventDefault();
+
+        if (!userNameInput.value) return;
+        userName = userNameInput.value;
+        userNameLabel.textContent = userName;
+        clearInputValue(userNameInput);
+      });
+
+      function clearInputValue(input) {
+        input.value = "";
+      }
     </script>
   </body>
 </html>
